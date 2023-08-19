@@ -5,6 +5,82 @@ require 'timeoutai'
 require 'hardai_2'
 require 'aggressiveai'
 
+
+local function chooseTheClass()
+    return cardChoiceSelectorEffect({
+        id = "choose_the_class_king_midas",
+        name = "Choose a class",
+        trigger = startOfTurnTrigger,
+
+        upperTitle  = "Choose a class",
+        lowerTitle  = "",
+
+        effectFirst = sacrificeTarget().apply(selectLoc(loc(currentPid, handPloc)).union(selectLoc(loc(currentPid, deckPloc))).union(selectLoc(loc(currentPid, skillsPloc))))
+			.seq(setPlayerNameEffect("King Midas", currentPid))
+			.seq(setPlayerAvatarEffect("profit", currentPid))
+			.seq(gainMaxHealthEffect(currentPid, const(42).add(getPlayerMaxHealth(currentPid).negate())))
+			.seq(gainHealthEffect(42))
+			.seq(createCardEffect(greed_is_good_skilldef(), currentSkillsLoc))
+			.seq(createCardEffect(golden_touch_abilitydef(), currentSkillsLoc))
+			.seq(createCardEffect(midas_kings_advicer_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_kings_advicer_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_kings_advicer_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_kings_advicer_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_gold_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_gold_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_gold_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_gold_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_liquid_gold_carddef(), currentDeckLoc))
+			.seq(createCardEffect(midas_liquid_gold_carddef(), currentDeckLoc))
+			.seq(shuffleEffect(currentDeckLoc))
+			.seq(waitForClickEffect("Thank you for choosing your class.", ""))
+		.seq(waitForClickEffect("If you enjoy this game, be sure to Favourite the script.", ""))
+		.seq(waitForClickEffect("Once the game ends, click back on the game record tile. An 'Add to Favourites' tile will have appeared alongside 'Replay' and 'Rematch'.", ""))
+		.seq(waitForClickEffect("Once favourited, you will be able to host your own custom games using this script.", ""))
+		.seq(waitForClickEffect("For game to begin normally please end turn now. And remeber to check out Realmrising.com for more content", "")),
+        effectSecond = waitForClickEffect("Thank you for choosing your class.", "")
+		.seq(waitForClickEffect("If you enjoy this game, be sure to Favourite the script.", ""))
+		.seq(waitForClickEffect("Once the game ends, click back on the game record tile. An 'Add to Favourites' tile will have appeared alongside 'Replay' and 'Rematch'.", ""))
+		.seq(waitForClickEffect("Once favourited, you will be able to host your own custom games using this script.", ""))
+		.seq(waitForClickEffect("For game to begin normally please end turn now. And remeber to check out Realmrising.com for more content", "")),
+
+        layoutFirst = createLayout({
+            name = "King Midas",
+            art = "art/T_Bribe",
+            frame = "frames/Treasure_CardFrame",
+            text = "Play as a level 3 King Midas."  }),
+
+        layoutSecond = createLayout({
+            name = "Selected class",
+            art = "art/T_All_Heroes",
+            text = "Play as the character you selected when setting up the game." }),
+
+        turn = 1
+    })
+end
+
+local function goFirstEffect()
+	return createGlobalBuff({
+        id="draw_three_start_buff",
+        name = "Go First",
+        abilities = {
+            createAbility({
+                id="go_first_draw_effect",
+                trigger = endOfTurnTrigger,
+                effect = ifElseEffect(
+					getTurnsPlayed(oppPid).eq(1),
+					nullEffect(),
+					drawCardsEffect(2)
+				)
+            })
+        }
+    })
+end
+
+
+
+
+
 function setupGame(g)
 	registerCards(g, {
 		midas_kings_advicer_carddef(),
@@ -23,43 +99,35 @@ function setupGame(g)
         players = {
             {
                 id = plid1,
-                startDraw = 3,
-                name = "King Midas",
-                avatar="profit",
-                health = 40,
+                startDraw = 0,
+                init = {
+                    fromEnv = plid1
+                },
                 cards = {
-					deck = {
-						{ qty=4, card=midas_kings_advicer_carddef() },
-                        { qty=4, card=midas_gold_carddef() },
-                        { qty=2, card=midas_liquid_gold_carddef() },
-                        -- { qty=2, card=rally_the_troops_carddef() },
-						
-					},
-					skills = {
-						{ qty=1, card=greed_is_good_skilldef() },
-						{ qty=1, card=golden_touch_abilitydef() }
-					},
-					buffs = {
-						drawCardsCountAtTurnEndDef(5),
-						discardCardsAtTurnStartDef(),
-						fatigueCount(40, 1, "FatigueP1")
-					}
+                    buffs = {
+						drawCardsCountAtTurnEndDef(3),
+						goFirstEffect(),
+                        discardCardsAtTurnStartDef(),
+						chooseTheClass(),
+						fatigueCount(42, 1, "FatigueP1")
+                    }
                 }
             },
-			{
+            {
                 id = plid2,
-                startDraw = 5,
+                startDraw = 0,
 				init = {
                     fromEnv = plid2
                 },
                 cards = {
-					buffs = {
-						drawCardsCountAtTurnEndDef(5),
-						discardCardsAtTurnStartDef(),
-						fatigueCount(40, 1, "FatigueP2")
-					}
+                    buffs = {
+                        drawCardsCountAtTurnEndDef(5),
+                        discardCardsAtTurnStartDef(),
+						chooseTheClass(),
+						fatigueCount(42, 1, "FatigueP2")
+                    }
                 }
-            }           
+            }			
         }
     })
 end
@@ -291,6 +359,7 @@ end
 
 
 
+
 function setupMeta(meta)
     meta.name = "King_Midas"
     meta.minLevel = 0
@@ -298,7 +367,7 @@ function setupMeta(meta)
     meta.introbackground = ""
     meta.introheader = ""
     meta.introdescription = ""
-    meta.path = "X:/Mit drev/Realms Rising/LUA/King_Midas.lua"
+    meta.path = "C:/Users/glatk/Documents/HR - LUA/hero-realms-lua-scripts/Zabuza/Character class/King_Midas.lua"
      meta.features = {
 }
 
