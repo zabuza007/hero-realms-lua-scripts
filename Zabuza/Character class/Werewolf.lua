@@ -1,3 +1,21 @@
+	--[[
+Werewolf game - Created by Zabuza
+v0.50
+
+Starting Cards 
+4x gold
+1x silver flask
+2x Self-defence
+2x werewolf companion human (champion)
+1x The full moon (champion)
+
+Skill - Summon Demon (Summon 1 of 3 random minor demons)
+	Minor Demons:
+		* Shadow Feeder
+		* Demonic Leech - Opponent loses 1 health. Demonic leech gains +1 shield until it leaves play.
+		* Succubus
+Ability - Demonic Pact - 9 combat and lose 4 health
+]]
 require 'herorealms'
 require 'decks'
 require 'stdlib'
@@ -88,6 +106,7 @@ function setupGame(g)
 		werewolf_silver_flask_wolf_carddef(),
 		werewolf_full_moon_carddef(),
 		scry_werewolf_abillities(),
+		scry_human_abillities(),
 		inner_beast_skilldef(),
 		call_too_the_moon_abilitydef(),
 	})
@@ -101,9 +120,9 @@ function setupGame(g)
         players = {
             {
                 id = plid1,
-                startDraw = 10,
-                name = "King Midas",
-                avatar="profit",
+                startDraw = 3,
+                name = "Werewolf",
+                avatar="the_wolf_tribe",
                 health = 50,
                 cards = {
 					deck = {
@@ -116,7 +135,7 @@ function setupGame(g)
 						
 					},
 					skills = {
-						{ qty=1, card=inner_beast_skilldef() },
+						-- { qty=1, card=inner_beast_skilldef() },
 						{ qty=1, card=call_too_the_moon_abilitydef() },
 						{ qty=1, card=scry_werewolf_abillities() }
 					},
@@ -134,6 +153,9 @@ function setupGame(g)
                     fromEnv = plid2
                 },
                 cards = {
+					skills = {
+						{ qty=1, card=scry_werewolf_abillities() }
+					},
 					buffs = {
 						drawCardsCountAtTurnEndDef(5),
 						discardCardsAtTurnStartDef(),
@@ -148,7 +170,7 @@ end
 function werewolf_full_moon_carddef()
 	return createChampionDef({
         id="werewolf_full_moon",
-        name="Full moon",
+        name="The full moon",
         types={championType, curseType},
         acquireCost=0,
         health = 4,
@@ -184,6 +206,11 @@ function werewolf_full_moon_carddef()
 																						.union(selectLoc(loc(currentPid, deckPloc)))
 																						.union(selectLoc(loc(currentPid, castPloc)))
 																						.where(isCardName("werewolf_silver_flask_human"))
+																				))
+							-- transform skill
+							.seq(transformTarget("scry_human_abillities").apply( 	selectLoc(loc(currentPid, skillsPloc))
+																						.union(selectLoc(loc(oppPid, skillsPloc)))
+																						.where(isCardName("scry_werewolf_abillities"))
 																				)
 							),
 							
@@ -231,6 +258,12 @@ function werewolf_full_moon_carddef()
 																						.union(selectLoc(loc(oppPid, deckPloc)))
 																						.union(selectLoc(loc(oppPid, castPloc)))
 																						.where(isCardName("werewolf_silver_flask_wolf"))
+																				)
+							)
+							-- transform skill
+							.seq(transformTarget("scry_werewolf_abillities").apply( 	selectLoc(loc(currentPid, skillsPloc))
+																						.union(selectLoc(loc(oppPid, skillsPloc)))
+																						.where(isCardName("scry_human_abillities"))
 																				)
 							),
 				activations = singleActivation,
@@ -283,25 +316,24 @@ function werewolf_silver_flask_human_carddef()
 					xmlText = [[
 						<vlayout forceheight="false" spacing="6">
 							<hlayout spacing="10">
-
-						<icon text="{gold_1}" fontsize="40"/>
-
-						<icon text="{health_1}" fontsize="40"/>
-						</hlayout>
+								<icon text="{gold_1}" fontsize="40"/>
+								<icon text="{health_1}" fontsize="40"/>
+							</hlayout>
 							<divider/>
-						<hlayout spacing="10">
+							<hlayout spacing="10">
 								<icon text="{scrap}" fontsize="40"/>
 								<vlayout  forceheight="true">
-						<text text="Sell you silver flask for some extra coin {gold_2}" fontsize="18"/>
+									<text text="Sell you silver flask for some extra coin {gold_2}" fontsize="18"/>
 								</vlayout>
-							</hlayout><divider/>
+							</hlayout>
+							<divider/>
 							<hlayout forcewidth="true" spacing="10">
 								<vlayout  forceheight="false">
-						<text text="Sometimes friends can be found a the bottom." fontstyle="italic" fontsize="14"/>
+									<text text="Sometimes friends can be found a the bottom." fontstyle="italic" fontsize="14"/>
 								</vlayout>
 							</hlayout>
 						</vlayout>
-					]]
+					]],
 				})
 			}),
 		},
@@ -394,48 +426,11 @@ function werewolf_silver_flask_wolf_carddef()
 end
 
 
-function werewolf_knifebelt_wolf_carddef()
-	return createItemDef({
-        id="werewolf_knifebelt_wolf",
-        name="Self defence - Scythe",
-        types={itemType, meleeWeaponType},
-        acquireCost=0,
-        abilities = {
-			createAbility({
-				id = "selfDefenceHuman",
-				trigger = autoTrigger,
-				effect = gainCombatEffect(2),
-                cost = noCost,
-				activations = singleActivation
-			})
-		},
-        layout = createLayout({
-			name = "Self defence - Scythe",
-			art = "art/T_Fighter_Hand_Scythe",
-			frame = "frames/Generic_CardFrame",
-			text = "",
-			xmlText = [[<vlayout forceheight="false" spacing="6">
-    <hlayout spacing="10">
-
-<icon text="{combat_2}" fontsize="50"/>
-
-</hlayout>
-    <divider/>
-    <hlayout forcewidth="true" spacing="10">
-        <vlayout  forceheight="false">
-<text text="Sometimes you need to defend yourself." fontstyle="italic" fontsize="16"/>
-        </vlayout>
-    </hlayout>
-</vlayout>]],
-        })
-    })
-end
-
 
 function werewolf_self_defence_human_carddef()
 	return createItemDef({
         id="werewolf_self_defence_human",
-        name="Self defence - Scythe",
+        name="Self-defence",
         types={itemType, meleeWeaponType},
         acquireCost=0,
         abilities = {
@@ -448,27 +443,26 @@ function werewolf_self_defence_human_carddef()
 			})
 		},
         layout = createLayout({
-			name = "Self defence - Scythe",
+			name = "Self-defence",
 			art = "art/T_Fighter_Hand_Scythe",
 			frame = "frames/Generic_CardFrame",
 			text = "",
-			xmlText = [[<vlayout forceheight="false" spacing="6">
-    <hlayout spacing="10">
-
-<icon text="{combat_2}" fontsize="50"/>
-
-</hlayout>
-    <divider/>
-    <hlayout forcewidth="true" spacing="10">
-        <vlayout  forceheight="false">
-<text text="Sometimes you need to defend yourself." fontstyle="italic" fontsize="16"/>
-        </vlayout>
-    </hlayout>
-</vlayout>]],
+			xmlText = [[
+				<vlayout forceheight="false" spacing="6">
+					<hlayout spacing="10">
+						<icon text="{combat_2}" fontsize="50"/>
+					</hlayout>
+					<divider/>
+					<hlayout forcewidth="true" spacing="10">
+						<vlayout  forceheight="false">
+							<text text="Sometimes you need to defend yourself." fontstyle="italic" fontsize="16"/>
+						</vlayout>
+					</hlayout>
+				</vlayout>
+			]],
         })
     })
 end
-
 
 function werewolf_self_defence_wolf_carddef()
 	return createActionDef({
@@ -490,22 +484,23 @@ function werewolf_self_defence_wolf_carddef()
 			art = "art/T_Wolf_Form",
 			frame = "frames/HR_CardFrame_Action_Wild",
 			text = "",
-			xmlText = [[<vlayout forceheight="false" spacing="6">
-    <hlayout spacing="10">
-
-<icon text="{combat_5}" fontsize="50"/>
-
-</hlayout>
-    <divider/>
-    <hlayout forcewidth="true" spacing="10">
-        <vlayout  forceheight="false">
-<text text="Now it's their turn to defend themself." fontstyle="italic" fontsize="16"/>
-        </vlayout>
-    </hlayout>
-</vlayout>]],
+			xmlText = [[
+				<vlayout forceheight="false" spacing="6">
+					<hlayout spacing="10">
+						<icon text="{combat_5}" fontsize="50"/>
+					</hlayout>
+					<divider/>
+					<hlayout forcewidth="true" spacing="10">
+						<vlayout  forceheight="false">
+							<text text="Now it's their turn to defend themself." fontstyle="italic" fontsize="16"/>
+						</vlayout>
+					</hlayout>
+				</vlayout>
+			]],
         })
     })
 end
+
 
 
 function werewolf_companion_human_carddef()
@@ -530,23 +525,24 @@ function werewolf_companion_human_carddef()
 			art = "art/T_Cunning_Of_The_Wolf",
 			frame = "frames/HR_CardFrame_Champion_Wild",
 			text = "",
-			xmlText = [[<vlayout forceheight="false" spacing="6">
-    <hlayout spacing="10">
-
-<icon text="{health_2}" fontsize="50"/>
-
-</hlayout>
-    <divider/>
-    <hlayout forcewidth="true" spacing="10">
-        <vlayout  forceheight="false">
-<text text="When you need a place to rest you can always go to the pack." fontstyle="italic" fontsize="16"/>
-        </vlayout>
-    </hlayout>
-</vlayout>]],
+			xmlText = [[
+				<vlayout forceheight="false" spacing="6">
+					<hlayout spacing="10">
+						<icon text="{health_2}" fontsize="50"/>
+					</hlayout>
+					<divider/>
+					<hlayout forcewidth="true" spacing="10">
+						<vlayout  forceheight="false">
+							<text text="When you need a place to rest you can always go to the pack." fontstyle="italic" fontsize="16"/>
+						</vlayout>
+					</hlayout>
+				</vlayout>
+			]],
+			health = 1,
+			isGuard = false,
         })
     })
 end
-
 
 function werewolf_companion_wolf_carddef()
 	return createChampionDef({
@@ -704,36 +700,245 @@ end
 
 
 function scry_werewolf_abillities()
-	return createDef({
+	return createSkillDef({
 		id = "scry_werewolf_abillities",
 		name = "When the full moon is out, the werewolfs deck changes.",
-		acquireCost = 0,
+        types = { skillType },
 		cardTypeLabel = "Ability",
 		playLocation = skillsPloc,
 		types = { heroAbilityType },
+        layout = cardLayout,
+		layoutPath= "art/T_Wolf_Form",
         abilities = {
 			createAbility({
-				id = "callToTheMoonActive",
+				id = "scryWerewolf",
 				trigger = uiTrigger,
 				promptType = showPrompt,
-				layoutFirst = createLayout({
-					name = "King Midas",
-					art = "art/T_Bribe",
-					frame = "frames/Treasure_CardFrame",
-					text = "Play as a level 3 King Midas."  }),
-
-				layoutSecond = createLayout({
-					name = "Selected class",
-					art = "art/T_All_Heroes",
-					text = "Play as the character you selected when setting up the game." }),
-				effect = nullEffect(),
-				cost = noCost
+                activations = multipleActivations,
+				cost = noCost,
+				effect = pushChoiceEffectWithTitle({
+					choices = {
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Strengh in numbers",
+								art = "art/T_Strength_Of_The_Wolf",
+								frame = "frames/HR_CardFrame_Champion_Wild",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<icon text="{combat_2}" fontsize="50"/>
+										</hlayout>
+										<divider/>
+										<hlayout forcewidth="true" spacing="10">
+											<vlayout  forceheight="false">
+												<text text="When you attack one, you attack them all." fontstyle="italic" fontsize="16"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+								health = 2,
+								isGuard = true
+							}),
+						},
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Wolf Frenzy",
+								art = "art/T_Wolf_Form",
+								frame = "frames/HR_CardFrame_Action_Wild",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<icon text="{combat_5}" fontsize="50"/>
+										</hlayout>
+										<divider/>
+										<hlayout forcewidth="true" spacing="10">
+											<vlayout  forceheight="false">
+												<text text="Now it's their turn to defend themself." fontstyle="italic" fontsize="16"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+							}),
+						},
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Silver flask",
+								art = "art/treasures/T_Thief_Elixir_White",
+								frame = "frames/Generic_CardFrame",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<text text="Drinking won't help in this form." fontstyle="italic" fontsize="14"/>
+										</hlayout>
+										<divider/>
+										<hlayout spacing="10">
+											<icon text="{scrap}" fontsize="40"/>
+											<vlayout  forceheight="true">
+												<text text="You could throw it to deal some damage, but you won't get it back." fontstyle="italic" fontsize="16"/>
+												<text text="{combat_1} - {combat_5}" fontsize="40"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+							}),
+						},
+                                        
+					},
+					upperTitle = "Comfort of the pack, Self-defence and Siler flask changes into these cards when 'The full moon' is in play.",
+					lowerTitle = "Click any card to proceed."
+				}),
+				layout = createLayout({
+					name = "Werewolf deck",
+					art = "art/T_Wolf_Form",
+					frame = "frames/HR_CardFrame_Action_Wild",
+					xmlText = [[
+						<vlayout>
+							<hlayout flexibleheight="3">
+								<tmpro text="Here you can see what awaits you when 'The full moon' comes into play." fontsize="20" flexiblewidth="10" />
+							</hlayout>
+							<hlayout flexibleheight="1">
+								<tmpro text="Multiple uses" fontsize="14" fontstyle="italic" flexiblewidth="10" />
+							</hlayout>  
+						</vlayout>
+					]],
+					health = 3,
+					isGuard = false
+				}),
 			})
 			
-		},
-		layoutPath= "art/T_Wolf_Shaman"
+		}
 	})
+	
 end	
+
+function scry_human_abillities()
+	return createSkillDef({
+		id = "scry_human_abillities",
+		name = "When 'The full moon' leaves play, the werewolfs deck changes.",
+        types = { skillType },
+		cardTypeLabel = "Ability",
+		playLocation = skillsPloc,
+		types = { heroAbilityType },
+        layout = cardLayout,
+		layoutPath= "art/T_Parov_The_Enforcer",
+        abilities = {
+			createAbility({
+				id = "scryWerewolf",
+				trigger = uiTrigger,
+				promptType = showPrompt,
+                activations = multipleActivations,
+				cost = noCost,
+				effect = pushChoiceEffectWithTitle({
+					choices = {
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Comfort of the pack",
+								art = "art/T_Cunning_Of_The_Wolf",
+								frame = "frames/HR_CardFrame_Champion_Wild",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<icon text="{health_2}" fontsize="50"/>
+										</hlayout>
+										<divider/>
+										<hlayout forcewidth="true" spacing="10">
+											<vlayout  forceheight="false">
+												<text text="When you need a place to rest you can always go to the pack." fontstyle="italic" fontsize="16"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+								health = 1,
+								isGuard = false,
+							}),
+						},
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Self-defence",
+								art = "art/T_Fighter_Hand_Scythe",
+								frame = "frames/Generic_CardFrame",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<icon text="{combat_2}" fontsize="50"/>
+										</hlayout>
+										<divider/>
+										<hlayout forcewidth="true" spacing="10">
+											<vlayout  forceheight="false">
+												<text text="Sometimes you need to defend yourself." fontstyle="italic" fontsize="16"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+							}),
+						},
+                        {
+							effect = nullEffect(),
+							layout = createLayout({
+								name = "Silver flask",
+								art = "art/treasures/T_Thief_Elixir_White",
+								frame = "frames/Generic_CardFrame",
+								text = "",
+								xmlText = [[
+									<vlayout forceheight="false" spacing="6">
+										<hlayout spacing="10">
+											<icon text="{gold_1}" fontsize="40"/>
+											<icon text="{health_1}" fontsize="40"/>
+										</hlayout>
+										<divider/>
+										<hlayout spacing="10">
+											<icon text="{scrap}" fontsize="40"/>
+											<vlayout  forceheight="true">
+												<text text="Sell you silver flask for some extra coin {gold_2}" fontsize="18"/>
+											</vlayout>
+										</hlayout>
+										<divider/>
+										<hlayout forcewidth="true" spacing="10">
+											<vlayout  forceheight="false">
+												<text text="Sometimes friends can be found a the bottom." fontstyle="italic" fontsize="14"/>
+											</vlayout>
+										</hlayout>
+									</vlayout>
+								]],
+							}),
+						},
+					},
+					upperTitle = "'Strengh in numbers', 'Wolf Frenzy' and 'Siler flask' returns to these cards when 'The full moon' leaves play.",
+					lowerTitle = "Click any card to proceed."
+				}),
+				layout = createLayout({
+					name = "Werewolf deck - human",
+					art = "art/T_Parov_The_Enforcer",
+					frame = "frames/Generic_CardFrame",
+					xmlText = [[
+						<vlayout>
+							<hlayout flexibleheight="3">
+								<tmpro text="Here you can see what the deck changes back into when 'The full moon' leaves play." fontsize="20" flexiblewidth="10" />
+							</hlayout>
+							<hlayout flexibleheight="1">
+								<tmpro text="Multiple uses" fontsize="14" fontstyle="italic" flexiblewidth="10" />
+							</hlayout>  
+						</vlayout>
+					]],
+					health = 3,
+					isGuard = false
+				}),
+			})
+			
+		}
+	})
+	
+end
 
 
 function endGame(g)

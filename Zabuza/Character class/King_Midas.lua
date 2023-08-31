@@ -1,3 +1,15 @@
+	--[[
+King Midas - Created by Zabuza
+v1.03
+
+Starting Cards 
+4x Kings advicer
+4x Midas gold
+2x Liquid gold
+
+Skill - Greed is good - turns gold into DMG
+Ability - Golden Touch - Sacrifice all champions in play, converts them back into gold
+]]
 require 'herorealms'
 require 'decks'
 require 'stdlib'
@@ -33,11 +45,11 @@ local function chooseTheClass()
 			.seq(createCardEffect(midas_liquid_gold_carddef(), currentDeckLoc))
 			.seq(createCardEffect(midas_liquid_gold_carddef(), currentDeckLoc))
 			.seq(shuffleEffect(currentDeckLoc))
-			.seq(waitForClickEffect("Thank you for choosing your class.", ""))
-		.seq(waitForClickEffect("If you enjoy this game, be sure to Favourite the script.", ""))
-		.seq(waitForClickEffect("Once the game ends, click back on the game record tile. An 'Add to Favourites' tile will have appeared alongside 'Replay' and 'Rematch'.", ""))
-		.seq(waitForClickEffect("Once favourited, you will be able to host your own custom games using this script.", ""))
-		.seq(waitForClickEffect("For game to begin normally please end turn now. And remeber to check out Realmrising.com for more content", "")),
+			.seq(waitForClickEffect("Thank you for choosing the King Midas class.", ""))
+		.seq(waitForClickEffect("Your skill allows you to convert undspend gold into an equal amount of damage, at the cost of loosing a permanent health ponit.", ""))
+		.seq(waitForClickEffect("Your abillity allows you to sacrifice all champions you have in play at the moment of use, you also regain their value in gold. Use it early game to get rid of your advicers or save it for an extra big swin in end game.", ""))
+		.seq(waitForClickEffect("Remember to save to your favourites, and you will be able to host your own custom games using this script.", ""))
+		.seq(waitForClickEffect("For game to begin normally please end turn now. And remeber to check out Realmrising.com or our discord for more content", "")),
         effectSecond = waitForClickEffect("Thank you for choosing your class.", "")
 		.seq(waitForClickEffect("If you enjoy this game, be sure to Favourite the script.", ""))
 		.seq(waitForClickEffect("Once the game ends, click back on the game record tile. An 'Add to Favourites' tile will have appeared alongside 'Replay' and 'Rematch'.", ""))
@@ -162,11 +174,12 @@ function midas_kings_advicer_carddef()
     <divider/>
     <hlayout forcewidth="true" spacing="10">
         <vlayout  forceheight="false">
-<text text="Lean into the power of 'No' to fend off the distractions of shiny new objects." fontsize="16"/>
+<text fontstyle="italic" text="Lean into the power of 'No' to fend off the distractions of shiny new objects." fontsize="16"/>
         </vlayout>
     </hlayout>
 </vlayout>]],
-			health = 2,
+			health = 1,
+			cost = 1,
 			isGuard = false
         })
     })
@@ -200,7 +213,7 @@ function midas_gold_carddef()
     <divider/>
     <hlayout forcewidth="true" spacing="10">
         <vlayout  forceheight="false">
-<text text="Gold is forever. It is beautiful, useful, and never wears out." fontsize="16"/>
+<text fontstyle="italic" text="Gold is forever. It is beautiful, useful, and never wears out." fontsize="16"/>
         </vlayout>
     </hlayout>
 </vlayout>]],
@@ -235,7 +248,7 @@ function midas_liquid_gold_carddef()
     <divider/>
     <hlayout forcewidth="true" spacing="10">
         <vlayout  forceheight="false">
-<text text="Wine has never tasted better." fontsize="16"/>
+<text fontstyle="italic" text="Wine has never tasted better." fontsize="16"/>
         </vlayout>
     </hlayout>
 </vlayout>]],
@@ -263,13 +276,13 @@ function greed_is_good_skilldef()
 					text = "",
 					xmlText = [[<vlayout forceheight="false" spacing="6">
 									<hlayout spacing="5">
-									   <icon text="{expend}" fontsize="75"/>
-									   <text text="Lose 1 max Health to convert all gold you have in play into damage." fontsize="18"/>
+									   <icon text="{expend}" fontsize="55"/>
+									   <text text="-{health_1} permanent health to convert all gold you have in play into damage." fontsize="18"/>
 									</hlayout> 
 									<divider/>
 									<hlayout forcewidth="true" spacing="10">
 										<vlayout  forceheight="false">
-											 <text text="Where Gold speaks, every tongue is silent." fontsize="14"/>
+											 <text fontstyle="italic" text="Where Gold speaks, every tongue is silent." fontsize="14"/>
 										</vlayout>
 									</hlayout>
 								</vlayout>]]
@@ -285,13 +298,13 @@ function greed_is_good_skilldef()
 			text = "",
 			xmlText = [[<vlayout forceheight="false" spacing="6">
 							<hlayout spacing="5">
-							   <icon text="{expend}" fontsize="75"/>
-							   <text text="Lose 1 max Health to convert all gold you have in play into damage." fontsize="18"/>
+							   <icon text="{expend}" fontsize="55"/>
+							   <text text="-{health_1} permanent health to convert all gold you have in play into damage." fontsize="18"/>
 							</hlayout> 
 							<divider/>
 							<hlayout forcewidth="true" spacing="10">
 								<vlayout  forceheight="false">
-									 <text text="Where Gold speaks, every tongue is silent." fontsize="14"/>
+									 <text fontstyle="italic" text="Where Gold speaks, every tongue is silent." fontsize="14"/>
 								</vlayout>
 							</hlayout>
 						</vlayout>]]
