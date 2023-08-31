@@ -376,7 +376,7 @@ end
 function setupMeta(meta)
     meta.name = "King_Midas"
     meta.minLevel = 0
-    meta.maxLevel = 0
+    meta.maxLevel = 3
     meta.introbackground = ""
     meta.introheader = ""
     meta.introdescription = ""
