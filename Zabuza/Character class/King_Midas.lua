@@ -1,5 +1,8 @@
 	--[[
 King Midas - Created by Zabuza
+v1.04
+skill check - so it can only be activated if there is gold to convert to DMG
+
 v1.03
 
 Starting Cards 
@@ -287,8 +290,8 @@ function greed_is_good_skilldef()
 									</hlayout>
 								</vlayout>]]
 				}),
-				effect = gainCombatEffect(getPlayerGold(currentPid)).seq(gainGoldEffect(getPlayerGold(currentPid).multiply(-1))).seq(gainHealthEffect(-1)).seq(gainMaxHealthEffect(currentPid, -1)) ,
-				cost = expendCost
+				effect = gainCombatEffect(getPlayerGold(currentPid).add(1)).seq(gainGoldEffect(getPlayerGold(currentPid).multiply(-1))).seq(gainHealthEffect(-1)).seq(gainMaxHealthEffect(currentPid, -1)) , 
+				cost = combineCosts({ expendCost, goldCost(1) })
 			})
 		},
 		layout = createLayout({
@@ -342,8 +345,6 @@ function golden_touch_abilitydef()
 					]]
 				}),
 				effect = gainGoldEffect(selectCurrentChampions().sum(getCardCost())).seq(sacrificeTarget().apply(selectCurrentChampions())),
-				-- effect = sacrificeTarget().apply(selectCurrentChampions()),
-				-- effect = sacrificeTarget().apply(selectLoc(loc(currentPid, inPlayPloc)).where(isCardChampion())),
 				cost = sacrificeSelfCost
 			})
 		},
